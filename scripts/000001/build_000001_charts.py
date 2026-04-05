@@ -28,7 +28,10 @@ GREEN      = "#2E7D32"   # 超预期（绿）
 RED2       = "#C41230"   # 逊预期（红）
 
 plt.rcParams.update({
-    "font.family":      "Times New Roman",
+    # Arial Unicode MS 同时支持拉丁字符与中日韩字符，避免中文乱码
+    "font.family":      "sans-serif",
+    "font.sans-serif":  ["Arial Unicode MS", "STHeiti", "Hiragino Sans GB", "Times New Roman"],
+    "axes.unicode_minus": False,   # 避免负号显示为方块
     "axes.titlesize":   13,
     "axes.labelsize":   10,
     "xtick.labelsize":  9,

@@ -111,6 +111,51 @@ financial_analysis/
 
 ---
 
+## matplotlib 中文字体规则
+
+**图表脚本（`build_*_charts.py`）中含有中文标题、坐标轴标签或图例时，必须使用以下字体配置，否则中文字符将显示为乱码（方块）。**
+
+`Times New Roman` 不含 CJK 字符，**禁止**单独用作 `font.family`。
+
+### 标准字体配置（所有含中文的图表脚本必须使用）
+
+```python
+plt.rcParams.update({
+    # Arial Unicode MS 同时支持拉丁字符与 CJK 字符，避免中文乱码
+    "font.family":        "sans-serif",
+    "font.sans-serif":    ["Arial Unicode MS", "STHeiti", "Hiragino Sans GB", "Times New Roman"],
+    "axes.unicode_minus": False,   # 避免负号显示为方块
+    # ... 其余参数
+})
+```
+
+### 本机可用 CJK 字体（按优先级排列）
+
+| 字体名 | 路径 | 说明 |
+|--------|------|------|
+| `Arial Unicode MS` | `/System/Library/Fonts/Supplemental/Arial Unicode.ttf` | **首选**，同时支持拉丁 + CJK |
+| `STHeiti` | `/System/Library/AssetsV2/…/STHEITI.ttf` | 无衬线中文黑体，图表效果佳 |
+| `Hiragino Sans GB` | `/System/Library/Fonts/Hiragino Sans GB.ttc` | 苹果日文/中文备选 |
+| `STFangsong` | `/System/Library/AssetsV2/…/STFANGSO.ttf` | 仿宋，备用 |
+
+### 图表脚本的中文支持规则
+
+1. 所有含中文文字的图表脚本，`rcParams` 必须使用上方标准配置
+2. 若脚本仅含英文，可继续使用 `"font.family": "Times New Roman"`
+3. 新建图表脚本前，可通过以下代码验证字体可用性：
+
+```python
+import matplotlib.font_manager as fm
+for name in ["Arial Unicode MS", "STHeiti", "Hiragino Sans GB"]:
+    try:
+        fm.findfont(fm.FontProperties(family=name), fallback_to_default=False)
+        print(f"OK: {name}")
+    except:
+        print(f"MISSING: {name}")
+```
+
+---
+
 ## 股价数据获取规则
 
 **报告中涉及当前股价、市值、52 周区间等市场数据时，必须通过 `yfinance` 动态获取，禁止手动填写或估算。**

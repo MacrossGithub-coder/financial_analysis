@@ -28,7 +28,9 @@ GREEN  = "#2E7D32"   # green (beat)
 
 # ── 字体 ──────────────────────────────────────────────────────────────────────
 plt.rcParams.update({
-    "font.family":      "Times New Roman",
+    "font.family":      "sans-serif",
+    "font.sans-serif":  ["Arial Unicode MS", "STHeiti", "Hiragino Sans GB", "Times New Roman"],
+    "axes.unicode_minus": False,
     "axes.titlesize":   13,
     "axes.labelsize":   10,
     "xtick.labelsize":  9,

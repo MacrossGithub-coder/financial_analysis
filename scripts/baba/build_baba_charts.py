@@ -16,7 +16,9 @@ os.makedirs(OUT, exist_ok=True)
 
 # ── Global style ──────────────────────────────────────────────────────────────
 plt.rcParams.update({
-    "font.family":      "Times New Roman",
+    "font.family":      "sans-serif",
+    "font.sans-serif":  ["Arial Unicode MS", "STHeiti", "Hiragino Sans GB", "Times New Roman"],
+    "axes.unicode_minus": False,
     "font.size":        10,
     "axes.titlesize":   12,
     "axes.titleweight": "bold",
