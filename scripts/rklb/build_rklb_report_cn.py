@@ -1,6 +1,6 @@
 """
-Build RKLB Q4 FY2025 Earnings Update – Chinese DOCX Report
-Output: output/RKLB/RKLB_Q4_FY2025_业绩更新报告_中文版.docx
+Build RKLB Q1 FY2026 Earnings Update – Chinese DOCX Report
+Output: output/RKLB/RKLB_Q1_FY2026_业绩更新报告_中文版.docx
 """
 import os
 from docx import Document
@@ -51,22 +51,18 @@ def set_cell_bg(cell, hex_color):
     shd.set(qn("w:val"),  "clear")
     tcPr.append(shd)
 
-def set_cell_font(cell, bold=False, color_hex=None, size_pt=10):
+def set_cell_font(cell, bold=False, color_hex=None, size_pt=10, italic=False, cn=False):
     for para in cell.paragraphs:
         for run in para.runs:
-            run.bold = bold
-            run.font.size = Pt(size_pt)
+            run.font.bold    = bold
+            run.font.size    = Pt(size_pt)
+            run.font.italic  = italic
+            if cn:
+                run.font.name = "宋体"
+                run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
             if color_hex:
                 r, g, b = hex_to_rgb(color_hex)
                 run.font.color.rgb = RGBColor(r, g, b)
-
-def set_cjk_font(run, font_name="宋体"):
-    rPr = run._r.get_or_add_rPr()
-    rFonts = rPr.find(qn("w:rFonts"))
-    if rFonts is None:
-        rFonts = OxmlElement("w:rFonts")
-        rPr.insert(0, rFonts)
-    rFonts.set(qn("w:eastAsia"), font_name)
 
 def add_hyperlink(para, text, url):
     part = para.part
@@ -75,63 +71,75 @@ def add_hyperlink(para, text, url):
     hl.set(qn("r:id"), r_id)
     r  = OxmlElement("w:r")
     rPr = OxmlElement("w:rPr")
-    color_el = OxmlElement("w:color"); color_el.set(qn("w:val"), LBLUE_HEX)
-    u_el = OxmlElement("w:u"); u_el.set(qn("w:val"), "single")
+    color_el = OxmlElement("w:color")
+    color_el.set(qn("w:val"), LBLUE_HEX)
+    u_el = OxmlElement("w:u")
+    u_el.set(qn("w:val"), "single")
     rPr.append(color_el); rPr.append(u_el)
     r.append(rPr)
-    t = OxmlElement("w:t"); t.text = text
-    r.append(t); hl.append(r)
+    t = OxmlElement("w:t")
+    t.text = text
+    r.append(t)
+    hl.append(r)
     para._p.append(hl)
 
-def add_heading_cn(doc, text, level=1):
+def add_section_heading(doc, text, level=1):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     run = p.add_run(text)
     run.bold = True
-    run.font.size = Pt(12 if level == 1 else 10.5)
-    set_cjk_font(run, "黑体")
+    run.font.size = Pt(13 if level == 1 else 11)
+    run.font.name = "黑体"
+    run._element.rPr.rFonts.set(qn("w:eastAsia"), "黑体")
     r, g, b = hex_to_rgb(BLUE_HEX)
     run.font.color.rgb = RGBColor(r, g, b)
     pPr = p._p.get_or_add_pPr()
     pBdr = OxmlElement("w:pBdr")
     bottom = OxmlElement("w:bottom")
-    bottom.set(qn("w:val"), "single"); bottom.set(qn("w:sz"), "6")
-    bottom.set(qn("w:space"), "4"); bottom.set(qn("w:color"), BLUE_HEX)
+    bottom.set(qn("w:val"),  "single")
+    bottom.set(qn("w:sz"),   "6")
+    bottom.set(qn("w:space"), "4")
+    bottom.set(qn("w:color"), BLUE_HEX)
     pBdr.append(bottom); pPr.append(pBdr)
     p.paragraph_format.space_before = Pt(14)
     p.paragraph_format.space_after  = Pt(4)
     return p
 
-def body_cn(doc, text, bold=False, italic=False, color_hex=None, size=10):
+def body(doc, text, bold=False, italic=False, color_hex=None, size=10):
     p = doc.add_paragraph()
     run = p.add_run(text)
     run.bold = bold; run.italic = italic
     run.font.size = Pt(size)
-    set_cjk_font(run, "宋体")
+    run.font.name = "宋体"
+    run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
     if color_hex:
         r, g, b = hex_to_rgb(color_hex)
         run.font.color.rgb = RGBColor(r, g, b)
     p.paragraph_format.space_after = Pt(4)
     return p
 
-def bullet_cn(doc, text, bold_prefix=None, color_hex=None):
+def bullet(doc, text, bold_prefix=None, color_hex=None):
     p = doc.add_paragraph(style="List Bullet")
     p.paragraph_format.space_after = Pt(3)
     p.paragraph_format.left_indent = Inches(0.25)
     if bold_prefix:
         r1 = p.add_run(bold_prefix + " ")
-        r1.bold = True; r1.font.size = Pt(10)
-        set_cjk_font(r1, "黑体")
+        r1.bold = True
+        r1.font.size = Pt(10)
+        r1.font.name = "宋体"
+        r1._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
         if color_hex:
             rv, gv, bv = hex_to_rgb(color_hex)
             r1.font.color.rgb = RGBColor(rv, gv, bv)
         r2 = p.add_run(text)
         r2.font.size = Pt(10)
-        set_cjk_font(r2, "宋体")
+        r2.font.name = "宋体"
+        r2._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
     else:
         run = p.add_run(text)
         run.font.size = Pt(10)
-        set_cjk_font(run, "宋体")
+        run.font.name = "宋体"
+        run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
     return p
 
 def add_chart(doc, filename, width_in=6.0, caption=""):
@@ -146,12 +154,13 @@ def add_chart(doc, filename, width_in=6.0, caption=""):
             cp.alignment = WD_ALIGN_PARAGRAPH.CENTER
             cp.runs[0].italic = True
             cp.runs[0].font.size = Pt(8.5)
-            set_cjk_font(cp.runs[0], "宋体")
+            cp.runs[0].font.name = "宋体"
+            cp.runs[0]._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
             r, g, b = hex_to_rgb(GRAY_HEX)
             cp.runs[0].font.color.rgb = RGBColor(r, g, b)
             cp.paragraph_format.space_after = Pt(6)
     else:
-        body_cn(doc, f"[图表未找到: {filename}]", italic=True)
+        body(doc, f"[图表未找到: {filename}]", italic=True)
 
 # ─── Build Document ───────────────────────────────────────────────────────────
 doc = Document()
@@ -170,90 +179,91 @@ p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 run = p.add_run("股票研究  |  航空航天与国防")
 run.font.size = Pt(8.5); run.bold = True
-set_cjk_font(run, "黑体")
+run.font.name = "宋体"; run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
 r, g, b = hex_to_rgb(GRAY_HEX)
 run.font.color.rgb = RGBColor(r, g, b)
 
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run = p.add_run("火箭实验室 (NASDAQ: RKLB)")
+run = p.add_run("火箭实验室 ROCKET LAB (NASDAQ: RKLB)")
 run.font.size = Pt(20); run.bold = True
-set_cjk_font(run, "黑体")
+run.font.name = "黑体"; run._element.rPr.rFonts.set(qn("w:eastAsia"), "黑体")
 r, g, b = hex_to_rgb(BLUE_HEX)
 run.font.color.rgb = RGBColor(r, g, b)
 
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run = p.add_run("2025年第四季度及全年业绩更新")
-run.font.size = Pt(14); run.italic = True
-set_cjk_font(run, "黑体")
+run = p.add_run("2026财年第一季度业绩更新 — 首破2亿美元大关，全指标超预期")
+run.font.size = Pt(13); run.italic = True
+run.font.name = "宋体"; run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
 r, g, b = hex_to_rgb(LBLUE_HEX)
 run.font.color.rgb = RGBColor(r, g, b)
 
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run = p.add_run("2026年2月26日  |  业绩发布日")
+run = p.add_run("财报发布日: 2026年5月7日  |  报告日期: 2026年6月16日")
 run.font.size = Pt(9)
-set_cjk_font(run, "宋体")
+run.font.name = "宋体"; run._element.rPr.rFonts.set(qn("w:eastAsia"), "宋体")
 r, g, b = hex_to_rgb(GRAY_HEX)
 run.font.color.rgb = RGBColor(r, g, b)
 
 doc.add_paragraph()
 
-# 评级表
+# Rating table
 rating_table = doc.add_table(rows=2, cols=6)
 rating_table.alignment = WD_TABLE_ALIGNMENT.CENTER
 rating_table.style = "Table Grid"
-headers = ["评级", "目标价", "当前股价", "市值", "52周低点", "52周高点"]
-values  = ["买入", "$35.00", mkt["price"], mkt["market_cap"], mkt["52w_low"], mkt["52w_high"]]
+headers = ["评级", "目标价", "当前股价", "总市值", "52周最低", "52周最高"]
+values  = ["买入", "$120.00", mkt["price"], mkt["market_cap"], mkt["52w_low"], mkt["52w_high"]]
 for i, (h, v) in enumerate(zip(headers, values)):
     hcell = rating_table.cell(0, i)
     hcell.text = h
     set_cell_bg(hcell, BLUE_HEX)
-    set_cell_font(hcell, bold=True, color_hex=WHITE_HEX, size_pt=9)
+    set_cell_font(hcell, bold=True, color_hex=WHITE_HEX, size_pt=9, cn=True)
     vcell = rating_table.cell(1, i)
     vcell.text = v
     vcell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
     if i == 0:
         set_cell_bg(vcell, GREEN_HEX)
-        set_cell_font(vcell, bold=True, color_hex=WHITE_HEX, size_pt=11)
+        set_cell_font(vcell, bold=True, color_hex=WHITE_HEX, size_pt=11, cn=True)
     else:
-        set_cell_font(vcell, bold=(i == 1), size_pt=10)
+        set_cell_font(vcell, bold=(i == 1), size_pt=10, cn=True)
 
 doc.add_paragraph()
 
 # 核心要点
-add_heading_cn(doc, "核心要点")
-bullet_cn(doc, "第四季度营收创历史新高，达1.797亿美元，同比增长36%、环比增长16%，超出市场预期约1.77亿美元约1.6%。",
-          bold_prefix="✔ 营收超预期：", color_hex=GREEN_HEX)
-bullet_cn(doc, "GAAP每股亏损0.09美元，与市场预期（亏损0.09–0.10美元）基本持平，反映良好的成本管控。",
-          bold_prefix="✔ EPS符合预期：", color_hex=LBLUE_HEX)
-bullet_cn(doc, "调整后EBITDA亏损1,740万美元，显著优于公司指引区间（亏损2,300–2,900万美元）。",
-          bold_prefix="✔ EBITDA超预期：", color_hex=GREEN_HEX)
-bullet_cn(doc, "GAAP毛利率创历史新高达38%，非GAAP毛利率达44%，分别环比提升100个和240个基点。",
-          bold_prefix="✔ 毛利率扩张：", color_hex=GREEN_HEX)
-bullet_cn(doc, "在手订单同比增长73%至历史新高18.5亿美元，核心来自美国太空发展局（SDA）8.16亿美元卫星主合同。",
-          bold_prefix="✔ 订单历史新高：", color_hex=BLUE_HEX)
-bullet_cn(doc, "2025年共完成21次Electron火箭发射（2024年为16次），第四季度发射7次（含1次HASTE高超音速任务）创季度纪录，全年任务成功率100%。",
-          bold_prefix="✔ 全年发射纪录：", color_hex=BLUE_HEX)
-bullet_cn(doc, "Neutron火箭一级箱体在水压测试中破裂，首飞时间推迟至2026年第四季度。",
-          bold_prefix="⚠ Neutron延期：", color_hex=RED_HEX)
+add_section_heading(doc, "核心要点")
+bullet(doc, "创纪录季度营收2.003亿美元（同比+63.5%，环比+11.5%），超市场一致预期1.894亿美元1,090万美元（+5.8%），并超公司指引上限（1.85亿–2.0亿美元）。",
+       bold_prefix="营收超预期:", color_hex=GREEN_HEX)
+bullet(doc, "GAAP每股亏损($0.07)，优于一致预期($0.08)，为公司历史最窄季度亏损，较Q1 2025的($0.12)大幅改善。",
+       bold_prefix="每股收益超预期:", color_hex=GREEN_HEX)
+bullet(doc, "调整后EBITDA亏损($11.8M)，大幅优于一致预期($26M)的1,420万美元，也显著优于指引中值约1,200万美元。",
+       bold_prefix="EBITDA大幅超预期:", color_hex=GREEN_HEX)
+bullet(doc, "GAAP毛利率38.2%（指引34-36%），非GAAP毛利率43.0%（指引39-41%），均超指引200+基点。",
+       bold_prefix="毛利率超预期:", color_hex=GREEN_HEX)
+bullet(doc, "创纪录在手订单22亿美元（同比+108%，环比+20%），包含公司史上最大合同（5架Neutron+3架Electron至2029年）及1.9亿美元HASTE批量采购订单。",
+       bold_prefix="在手订单激增:", color_hex=BLUE_HEX)
+bullet(doc, "Q2 2026营收指引2.25亿–2.4亿美元，较华尔街预期2.075亿美元高出10-16%，显示持续强劲增长动能。",
+       bold_prefix="Q2指引超预期:", color_hex=BLUE_HEX)
+bullet(doc, "Q1签署31份新发射合同（超2025全年总数）；与雷神联合入选金穹（Golden Dome）天基拦截器（SBI）项目。",
+       bold_prefix="战略级合同:", color_hex=BLUE_HEX)
 
 doc.add_paragraph()
 
-# 业绩快照表
-add_heading_cn(doc, "业绩快照")
+# 业绩概览表
+add_section_heading(doc, "业绩概览")
 snap_data = [
-    ["指标",           "Q4 2025实际值", "市场预期/公司指引",  "超预期情况",     "环比变动"],
-    ["营收",           "1.797亿美元",   "约1.77亿美元",       "✔ +1.6%",        "+16% 环比"],
-    ["发射服务营收",   "7,590万美元",   "—",                  "—",              "+85% 环比"],
-    ["航天系统营收",   "1.038亿美元",   "—",                  "—",              "-9% 环比"],
-    ["GAAP毛利率",     "38.0%",         "约35–37%",           "✔ +100–300基点", "+100基点"],
-    ["非GAAP毛利率",   "44.0%",         "—",                  "—",              "+240基点"],
-    ["调整后EBITDA",   "亏损1,740万",   "亏损2,300–2,900万",  "✔ 超预期",       "持续改善"],
-    ["GAAP每股亏损",   "0.09美元",      "0.09–0.10美元",      "✔ 基本持平",     "—"],
-    ["在手订单",       "18.5亿美元",    "—",                  "+73% 同比",      "—"],
-    ["全年2025营收",   "6.018亿美元",   "—",                  "+38% 同比",      "—"],
+    ["指标",           "Q1 2026实际",  "一致预期/指引",    "超/不及",          "同比Q1 2025"],
+    ["总营收",          "$200.3M",     "$189.4M",         "+$10.9M (+5.8%)", "+63.5%"],
+    ["  发射服务",       "$63.7M",      "$59.0M (est.)",   "+$4.7M",          "+78.9%"],
+    ["  太空系统",       "$136.7M",     "$132.1M (est.)",  "+$4.6M",          "+57.2%"],
+    ["GAAP毛利率",      "38.2%",       "34–36% (指引)",    "+220–420bps",     "+950bps"],
+    ["非GAAP毛利率",    "43.0%",       "39–41% (指引)",    "+200–400bps",     "+960bps"],
+    ["调整后EBITDA",    "($11.8M)",    "($26.0M)",        "+$14.2M",         "+$18.2M"],
+    ["GAAP每股收益",    "($0.07)",     "($0.08)",         "+$0.01",          "+$0.05"],
+    ["净亏损",          "($45.0M)",    "—",               "—",               "vs. ($60.6M)"],
+    ["在手订单",        "$22亿",       "—",               "+108% YoY",       "vs. $10.6亿"],
+    ["现金及等价物",     "$12.055亿",   "—",               "—",               "vs. $8.287亿"],
 ]
 tbl = doc.add_table(rows=len(snap_data), cols=5)
 tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -266,13 +276,9 @@ for r_idx, row in enumerate(snap_data):
         cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
         if r_idx == 0:
             set_cell_bg(cell, BLUE_HEX)
-            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9)
+            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9, cn=True)
         elif r_idx % 2 == 0:
             set_cell_bg(cell, "EBF5FB")
-        if r_idx > 0 and c_idx == 3:
-            color = GREEN_HEX if "✔" in val else (RED_HEX if "✘" in val else None)
-            if color:
-                set_cell_font(cell, bold=True, color_hex=color, size_pt=9)
 
 doc.add_page_break()
 
@@ -280,71 +286,78 @@ doc.add_page_break()
 # 第2-3页 — 详细业绩分析
 # ══════════════════════════════════════════════════════════════════════════════
 
-add_heading_cn(doc, "详细业绩分析")
+add_section_heading(doc, "详细业绩分析")
 
-add_heading_cn(doc, "营收：发射服务飞跃式增长创历史新高", level=2)
-body_cn(doc, "火箭实验室2025年第四季度营收1.797亿美元，创季度历史新高，同比增长36%、环比增长16%。本季度最突出的亮点是发射服务营收大幅跃升85%至7,590万美元，共完成6次Electron发射，创单季发射纪录。航天系统营收1.038亿美元，环比下降9%，主要受部分航天器项目完工节点影响，但全年仍是最大业务板块。")
+add_section_heading(doc, "营收：首次突破2亿美元大关", level=2)
+body(doc, "火箭实验室Q1 2026营收2.003亿美元，创单季历史新高，首次突破2亿美元里程碑。同比增长63.5%，环比增长11.5%（Q4 2025为1.797亿美元）。营收超出公司指引上限（1.85亿–2.0亿美元），并大幅超出市场一致预期1.894亿美元达1,090万美元（+5.8%）。")
+body(doc, "太空系统业务仍为主要收入来源，贡献1.367亿美元（同比+57.2%，环比+31.7%），增长受益于SDA第二/三期卫星项目推进及太阳能产品和组件的旺盛需求。发射服务贡献6,370万美元（同比+78.9%），环比下降16.1%系Q4 2025异常强劲的7次任务季度的正常回落。两大业务线均超出FactSet分段估计（分别为1.321亿和5,900万美元）。")
 
 add_chart(doc, "rklb_chart1_quarterly_revenue.png", 6.2,
-          "图1：2024年第一季度至2025年第四季度营收走势 | 来源：火箭实验室业绩公告")
-
-body_cn(doc, "全年2025年总营收达6.018亿美元（同比+38%），显著高于2024年的4.362亿美元。其中发射服务贡献1.99亿美元（同比+59%），航天系统贡献4.028亿美元（同比+30%），彰显公司向卫星制造与任务服务转型的战略成效。")
+          "图1：季度营收走势 Q1 2024–Q1 2026 | 数据来源：火箭实验室财报")
 
 add_chart(doc, "rklb_chart3_segment_revenue.png", 6.2,
-          "图2：Q4 2025营收结构及年度分部对比 | 来源：火箭实验室业绩公告")
+          "图2：Q1 2026分部营收构成及同比对比 | 数据来源：火箭实验室财报")
 
-add_heading_cn(doc, "超预期/低于预期分析", level=2)
-body_cn(doc, "本季度各项核心指标均超出预期或达成指引：")
-
+add_section_heading(doc, "超预期分析：全线超预期", level=2)
+body(doc, "Q1 2026业绩在所有关键指标上均超预期——这一全面超预期推动股价当日上涨34%：")
 add_chart(doc, "rklb_chart4_beat_miss.png", 6.2,
-          "图3：Q4 2025超预期/低于预期汇总 | 来源：Bloomberg、火箭实验室")
+          "图3：Q1 2026超/不及预期汇总 | 数据来源：火箭实验室、Bloomberg/FactSet一致预期")
 
-bullet_cn(doc, "营收1.797亿美元超出市场一致预期约1.77亿美元1.6%，得益于优于预期的发射执行节奏。")
-bullet_cn(doc, "调整后EBITDA亏损1,740万美元，比公司指引（亏损2,300–2,900万美元）好出560–1,160万美元，主要归因于更高营收及毛利率扩张。")
-bullet_cn(doc, "GAAP每股亏损0.09美元，与市场预期（0.09–0.10美元亏损）基本持平，反映Neutron研发投入持续加大。")
-bullet_cn(doc, "GAAP毛利率38%超出分析师普遍预期的35–37%，受益于更高利润率发射组合及航天系统成本优化。")
+bullet(doc, "营收2.003亿美元超出一致预期1.894亿美元5.8%，主要受益于太空系统交付强于预期及发射定价提升（商业Electron单次发射定价已升至约850万美元，较历史500-600万美元水平显著提升）。")
+bullet(doc, "调整后EBITDA亏损($11.8M)是最大亮点，超出一致预期($26M)1,420万美元，同比改善61%——清晰展现了盈利能力路径。")
+bullet(doc, "GAAP毛利率38.2%超出公司指引上限（36%）220个基点，受益于有利的产品组合及持续的成本优化。")
+bullet(doc, "GAAP每股亏损($0.07)优于一致预期($0.08)1美分，为公司历史最窄季度亏损。净亏损同比改善26%。")
 
-add_heading_cn(doc, "毛利率：结构性改善持续推进", level=2)
-body_cn(doc, "2025年第四季度再次录得明显的毛利率扩张。GAAP毛利率38%环比提升100个基点，较2024年第一季度的20%扩张超900个基点。非GAAP毛利率达44%，环比提升240个基点。这一趋势反映：（1）Electron火箭复用效益逐步显现；（2）航天系统项目执行效率持续提升；（3）随着火箭实验室转向定制清单定价，高利润率发射合同比重提升。")
+doc.add_page_break()
+
+add_section_heading(doc, "毛利率：持续扩张", level=2)
+body(doc, "Q1 2026 GAAP毛利率38.2%，较Q1 2024的20.0%提升了1,820个基点（近两年），较Q1 2025的28.7%提升了950个基点（一年）。非GAAP毛利率43.0%，两年前仅为28.0%，近乎翻倍。主要驱动因素：(1)更高利润率的发射合同，反映了Electron作为最可靠小型运载火箭的市场定位；(2)太空系统项目执行效率提升及SDA交付的学习曲线效益；(3)Gauss电推力器进入量产阶段具有有利的单位经济性。")
 
 add_chart(doc, "rklb_chart5_gross_margin.png", 6.2,
-          "图4：GAAP与非GAAP毛利率走势 | 来源：火箭实验室业绩公告")
+          "图4：GAAP与非GAAP毛利率趋势 | 数据来源：火箭实验室财报")
+
+add_section_heading(doc, "调整后EBITDA：亏损快速收窄", level=2)
+body(doc, "调整后EBITDA亏损从Q1 2025的($30.0M)持续改善：Q2 ($29.0M) → Q3 ($26.3M) → Q4 ($17.4M) → Q1 2026 ($11.8M)，同比改善61%。公司正走在实现季度EBITDA盈利的道路上（预计Q3或Q4 2026可实现）。Q2指引的($20M)–($26M)较Q1有所扩大，主要反映Mynaric整合成本及产品组合不利因素，我们视为阶段性回调。")
+
+add_chart(doc, "rklb_chart6_adj_ebitda.png", 5.5,
+          "图5：调整后EBITDA趋势 Q1'25–Q1'26 | 数据来源：火箭实验室财报")
+
+add_chart(doc, "rklb_chart7_eps_trend.png", 6.2,
+          "图6：GAAP每股收益季度趋势 Q1 2024–Q1 2026 | 数据来源：火箭实验室财报")
 
 doc.add_page_break()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 第4-5页 — 核心指标与业绩指引
+# 第4-5页 — 关键指标与展望
 # ══════════════════════════════════════════════════════════════════════════════
 
-add_heading_cn(doc, "核心指标与业绩指引")
+add_section_heading(doc, "关键指标与展望")
 
-add_heading_cn(doc, "调整后EBITDA：亏损持续收窄，趋近盈亏平衡", level=2)
-body_cn(doc, "2025年第四季度调整后EBITDA亏损1,740万美元，相比第三季度的亏损2,630万美元和第一季度的亏损3,300万美元大幅改善。亏损收窄轨迹清晰，管理层重申预计2026全年调整后EBITDA将转为正值。主要制约因素仍是Neutron研发支出，我们估算约每季度2,000–2,500万美元。")
+add_section_heading(doc, "在手订单：22亿美元，持续加速", level=2)
+body(doc, "合同在手订单季末达到创纪录的22亿美元，同比增长108%（去年同期10.6亿美元），环比增长20.2%（上季18.5亿美元）。增长由两大标志性合同驱动：(1)公司史上最大合同——与保密客户签订的多年期合同（5架Neutron+3架Electron至2029年）；(2)通过Kratos获得的1.9亿美元HASTE批量采购订单（20次高超声速测试飞行）。发射服务占在手订单的41.5%，较历史水平显著提升，反映了Neutron在首飞之前就已获得客户订单——这是市场信心的有力信号。12个月收入转化率约为36%，意味着约7.9亿美元将在未来一年内转化为收入。")
 
-add_chart(doc, "rklb_chart6_adj_ebitda.png", 5.5,
-          "图5：2025年各季度调整后EBITDA走势 | 来源：火箭实验室业绩公告")
+add_chart(doc, "rklb_chart8_backlog.png", 5.8,
+          "图7：在手订单增长趋势 Q1 2025–Q1 2026 | 数据来源：火箭实验室财报")
 
-add_heading_cn(doc, "在手订单与营收可见度", level=2)
-body_cn(doc, "公司2025年第四季度末合同在手订单达创历史新高的18.5亿美元，同比增长73%（约10.7亿美元）。这为公司提供了极强的营收可见度，约覆盖2025年全年营收的3倍。在手订单结构中航天系统占74%、发射服务占26%，凸显公司已成功从纯发射服务商转型为航天器制造及任务集成商。")
-body_cn(doc, "从美国太空发展局（SDA）斩获的8.16亿美元主合同——用于交付18颗先进导弹预警卫星——是公司历史上最大的单笔合同，有力证明火箭实验室已能与诺斯罗普·格鲁曼、L3哈里斯等大型国防企业同台竞争。")
-
-add_heading_cn(doc, "发射节奏：2025年全年21次创历史纪录", level=2)
-body_cn(doc, "2025年全年共完成21次Electron发射（2024年16次），第四季度创下单季7次发射纪录（含1次HASTE高超音速亚轨道任务），全年任务成功率100%。Electron持续的可靠性与不断增长的客户订单，使我们有信心2026年每季度6–7次以上的发射节奏具备可持续性。")
+add_section_heading(doc, "发射活动与HASTE项目", level=2)
+body(doc, "Q1 2026签署31份新Electron和HASTE发射合同，超过2025全年发射合同签署总数。总合同任务清单超过70项。报告期截止已完成8次任务。商业Electron单次发射定价提升至约850万美元（历史约500-600万美元），反映了该运载火箭在可靠性和发射周期方面的市场领先优势。")
+body(doc, "HASTE项目已成为重要增长引擎：通过Kratos获得的1.9亿美元国防部合同（20次MACH-TB 2.0发射）现占总发射在手订单的约三分之一。HASTE为金穹（Golden Dome）架构提供高超声速测试和模拟能力，使火箭实验室成为美国导弹防御测试的关键基础设施。")
 
 add_chart(doc, "rklb_chart9_launch_cadence.png", 6.2,
-          "图6：Electron发射节奏（2024年Q1至2025年Q4） | 来源：火箭实验室")
+          "图8：Electron发射节奏 Q1 2024–Q1 2026 | 数据来源：火箭实验室")
 
-add_heading_cn(doc, "2026年第一季度指引与展望", level=2)
-body_cn(doc, "管理层指引2026年第一季度营收1.85亿–2亿美元，GAAP毛利率34%–36%（较第四季度略有正常化）。调整后EBITDA亏损区间为2,100万–2,700万美元，略宽于第四季度，反映Neutron箱体测试失败后整改及研发加速投入。分析师对2026全年营收的一致预期约为8.85亿美元，意味着约47%的同比增长。")
+add_section_heading(doc, "Q2 2026展望：全面超华尔街预期", level=2)
+body(doc, "管理层给出Q2 2026营收指引2.25亿–2.4亿美元（中值2.325亿美元），环比增长约16%，显著高于华尔街预期约2.075亿美元。GAAP毛利率指引33–35%，非GAAP毛利率38–40%，均较Q1有所下降，反映SDA项目爬坡期产品组合不利及Mynaric整合拖累。调整后EBITDA指引($20M)–($26M)。")
 
 guid_data = [
-    ["指标",           "Q4 2025实际值", "Q1 2026指引",     "说明"],
-    ["营收",           "1.797亿美元",   "1.85亿–2亿美元", "环比+3%至+11%"],
-    ["GAAP毛利率",     "38%",           "34%–36%",         "略有正常化"],
-    ["调整后EBITDA",   "亏损1,740万",   "亏损2,100–2,700万","Neutron爬坡成本"],
-    ["发射次数（估）", "7次",           "约5–7次",         "维持高节奏"],
+    ["指标",           "Q1 2026实际",  "Q2 2026指引",      "华尔街预期",     "指引vs预期"],
+    ["营收",           "$200.3M",     "$225M–$240M",     "$207.5M",      "+8%至+16%"],
+    ["GAAP毛利率",      "38.2%",       "33%–35%",         "—",            "组合拖累"],
+    ["非GAAP毛利率",    "43.0%",       "38%–40%",         "—",            "Mynaric拖累"],
+    ["调整后EBITDA",    "($11.8M)",    "($20M)–($26M)",   "($15.1M)",     "亏损扩大"],
+    ["加权平均股数",     "605.4M",      "~629M",           "—",            "含优先股"],
 ]
-gtbl = doc.add_table(rows=len(guid_data), cols=4)
+gtbl = doc.add_table(rows=len(guid_data), cols=5)
 gtbl.alignment = WD_TABLE_ALIGNMENT.CENTER
 gtbl.style = "Table Grid"
 for r_idx, row in enumerate(guid_data):
@@ -354,44 +367,51 @@ for r_idx, row in enumerate(guid_data):
         cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx > 0 else WD_ALIGN_PARAGRAPH.LEFT
         if r_idx == 0:
             set_cell_bg(cell, BLUE_HEX)
-            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9)
+            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9, cn=True)
         elif r_idx % 2 == 0:
             set_cell_bg(cell, "EBF5FB")
 
 add_chart(doc, "rklb_chart10_guidance.png", 6.2,
-          "图7：营收走势与2026年第一季度指引 | 来源：火箭实验室、分析师预测")
+          "图9：营收趋势与Q2 2026指引对比 | 数据来源：火箭实验室、LSEG/FactSet")
 
 doc.add_page_break()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 第6-7页 — 投资逻辑更新
+# 第6-7页 — 投资论点更新
 # ══════════════════════════════════════════════════════════════════════════════
 
-add_heading_cn(doc, "投资逻辑更新")
+add_section_heading(doc, "投资论点更新")
 
-add_heading_cn(doc, "本季度的变化", level=2)
-body_cn(doc, "2025年第四季度业绩强化而非改变了我们对RKLB的核心投资逻辑。关键增量变化如下：")
-bullet_cn(doc, "GAAP毛利率38% / 非GAAP毛利率44%创历史新高，表明公司运营杠杆的释放速度超出预期——这是我们看多核心逻辑的重要支柱。", bold_prefix="正面：")
-bullet_cn(doc, "8.16亿美元SDA合同大幅提升了订单背景质量，确立了RKLB作为可信赖主承包商的地位，可与诺格、L3哈里斯比肩。", bold_prefix="正面：")
-bullet_cn(doc, "Neutron延期至2026年第四季度（此前预测为2026年中期）是一个重大挫折，我们将2026年Neutron营收贡献预测下调至接近零。", bold_prefix="负面：")
-bullet_cn(doc, "尽管Neutron面临不确定性，2026年第一季度指引1.85亿–2亿美元表明Electron及航天系统的有机增长完全能够独立驱动业绩向上。", bold_prefix="中性/正面：")
+add_section_heading(doc, "本季度关键变化", level=2)
+body(doc, "Q1 2026业绩具有里程碑意义——本季度验证了火箭实验室从小型发射专家向规模化、多业务航天平台公司的转型。关键增量变化：")
+bullet(doc, "营收首次单季突破2亿美元，两大业务线均显著超预期。63.5%的同比增速较Q4 2025的36%明显加速。", bold_prefix="积极:")
+bullet(doc, "在手订单同比翻倍至22亿美元，提供极高收入可见度。客户在Neutron首飞前即预订发射——这是市场信心的有力证明。", bold_prefix="积极:")
+bullet(doc, "与雷神联合入选金穹天基拦截器（SBI）示范项目，使RKLB定位于最高优先级国防项目。结合HASTE在威胁模拟中的角色，RKLB嵌入导弹防御架构的多个层面。", bold_prefix="积极:")
+bullet(doc, "Neutron首飞仍定于2026年Q4，管理层拒绝就早期或晚期Q4做进一步缩窄。Archimedes发动机热试车持续进行中；着陆驳船海试计划于2026年稍后进行。", bold_prefix="中性:")
+bullet(doc, "通过ATM增发持续摊薄（Q1融资4.5亿美元，累计4.74亿美元以上）。股份总数从Q1 2025的5.056亿增至Q1 2026的6.054亿（+20%）。", bold_prefix="消极:")
 
-add_heading_cn(doc, "投资逻辑：垂直整合打造航天服务平台", level=2)
-body_cn(doc, "火箭实验室正在执行一套独特的跨航天产业链垂直整合战略：（1）Electron作为全球商业小型运载火箭中发射频次最高的产品；（2）持续扩大的航天系统业务——为政府及商业客户制造航天器；（3）地面站网络和飞行软件在内的任务服务能力。这种多元化模式降低了单一项目风险，并创造了纯发射服务商无法复制的交叉销售机会。")
-body_cn(doc, "18.5亿美元创纪录的在手订单横跨多个年度项目，相对于RKLB约40亿美元的市值提供了极强的营收可见度。我们认为市场仍低估了航天系统合同基础的长期性与可持续性。")
+add_section_heading(doc, "核心论点：端到端太空基础设施平台", level=2)
+body(doc, "火箭实验室正在执行一项覆盖整个太空价值链的独特垂直整合战略：(1)Electron作为全球第二高发射频率的轨道火箭（仅次于猎鹰9号）；(2)即将面世的Neutron中型运载火箭，面向星座部署和国家安全任务；(3)快速增长的太空系统业务，制造航天器、太阳能产品、星跟踪器、分离系统和光通信终端；(4)通过HASTE、SBI和SDA项目在美国导弹防御领域的战略定位。")
+body(doc, "硬件制造规模、飞行验证经验和国防合同信誉的结合创造了极高的竞争壁垒，新进入者极难复制。凭借22亿美元在手订单和超20亿美元流动性，RKLB同时拥有需求信号和财务资源来执行其多年增长计划。")
 
-add_heading_cn(doc, "主要风险", level=2)
-bullet_cn(doc, "Neutron研发成本超支或进一步时间表滑延可能消耗现金并摊薄股东权益。", bold_prefix="风险一：")
-bullet_cn(doc, "Electron发射异常或靶场安全停飞可能干扰发射节奏和客户信心。", bold_prefix="风险二：")
-bullet_cn(doc, "国防部（DoD）/ NASA预算压力可能放缓航天系统合同授予节奏。", bold_prefix="风险三：")
-bullet_cn(doc, "SpaceX猎鹰9号及欧洲新兴小型运载火箭的市场竞争压力。", bold_prefix="风险四：")
+add_section_heading(doc, "并购战略：构建平台", level=2)
+body(doc, "Q1 2026继续进行补强性并购活动，强化垂直整合论点：")
+bullet(doc, "Mynaric AG：完成对欧洲光通信终端公司的收购，增加了对SDA和商业星座项目至关重要的星间链路能力。")
+bullet(doc, "Motiv Space Systems：签署收购协议，获取NASA火星毅力号传承的机器人和运动控制技术，增加太阳能阵列驱动组件和航天器机构。")
 
-add_heading_cn(doc, "催化剂", level=2)
-bullet_cn(doc, "Neutron火箭静态点火测试及更新后的发射时间表（预计2026年上半年披露）。")
-bullet_cn(doc, "从不断增长的18.5亿美元订单管线中斩获新的SDA或国防部主合同。")
-bullet_cn(doc, "Electron复用里程碑——如实现助推器复用将加速毛利率扩张。")
-bullet_cn(doc, "调整后EBITDA转正里程碑（管理层指引2026全年实现）。")
-bullet_cn(doc, "国际发射合作伙伴关系或行业会议中宣布新的商业卫星客户。")
+add_section_heading(doc, "风险因素", level=2)
+bullet(doc, "Neutron首飞失败或进一步延迟可能损害投资者信心和客户管线。", bold_prefix="风险1:")
+bullet(doc, "持续通过ATM增发摊薄股份（仅Q1即4.74亿美元以上）以资助Neutron和并购。", bold_prefix="风险2:")
+bullet(doc, "Q2–Q3毛利率压缩，受SDA项目爬坡和Mynaric整合影响（Q2 GAAP毛利率指引33–35%）。", bold_prefix="风险3:")
+bullet(doc, "来自SpaceX星舰（中重型发射）及新兴小型运载火箭竞争对手的竞争压力。", bold_prefix="风险4:")
+bullet(doc, "持续的负自由现金流——Q1 2026自由现金流约为($77.4M)。", bold_prefix="风险5:")
+
+add_section_heading(doc, "催化剂", level=2)
+bullet(doc, "Neutron首飞（目标Q4 2026）——最重要的估值重估催化剂。")
+bullet(doc, "纳入纳斯达克100指数（2026年6月22日生效）——预计将带来被动基金增量资金流入。")
+bullet(doc, "金穹/SBI项目进入示范阶段后的额外合同授予。")
+bullet(doc, "季度EBITDA盈利里程碑（按当前改善轨迹，可能在Q3或Q4 2026实现）。")
+bullet(doc, "Electron助推器复用验证——将在结构性降低单位成本的同时加速毛利率扩张。")
 
 doc.add_page_break()
 
@@ -399,26 +419,25 @@ doc.add_page_break()
 # 第8-10页 — 估值与预测
 # ══════════════════════════════════════════════════════════════════════════════
 
-add_heading_cn(doc, "估值与业绩预测")
+add_section_heading(doc, "估值与预测")
 
-add_heading_cn(doc, "年度营收走势", level=2)
-add_chart(doc, "rklb_chart7_annual_revenue.png", 6.0,
-          "图8：2021–2025年年度营收走势 | 来源：火箭实验室业绩公告")
-add_chart(doc, "rklb_chart8_q4_yoy.png", 5.0,
-          "图9：第四季度营收同比对比 | 来源：火箭实验室业绩公告")
+add_section_heading(doc, "同比营收增速重新加速", level=2)
 add_chart(doc, "rklb_chart2_yoy_growth.png", 6.2,
-          "图10：各季度营收同比增速 | 来源：火箭实验室业绩公告")
+          "图10：季度同比营收增长率 | 数据来源：火箭实验室财报")
 
-add_heading_cn(doc, "更新后的业绩预测", level=2)
+add_section_heading(doc, "更新后的预测", level=2)
+body(doc, "基于Q1强劲业绩及超预期Q2指引，我们上调FY2026E营收预测至9.4亿美元（此前8.85亿美元）。同时上调FY2027E预测至12.5亿美元，反映Neutron从2027年下半年开始贡献收入。")
+
 est_data = [
-    ["指标",           "FY2024实际",  "FY2025实际",   "FY2026预测",    "FY2027预测"],
-    ["营收",           "4.362亿美元", "6.018亿美元",  "约8.85亿美元",  "约11.5亿美元"],
-    ["同比增速",       "+78%",        "+38%",          "+47%",          "+30%"],
-    ["毛利率（GAAP）", "约27%",       "约35%",         "约37%",         "约40%"],
-    ["调整后EBITDA",   "亏损约9.1亿", "亏损约1.06亿", "约盈亏平衡",    "转为正值"],
-    ["Electron发射次数","16次",       "21次",          "约24–26次",     "约28–32次"],
+    ["指标",         "FY2024A",  "FY2025A",  "FY2026E（新）", "FY2026E（旧）", "FY2027E"],
+    ["营收",         "$436.2M",  "$601.8M",  "$940M",       "$885M",       "$1.25B"],
+    ["同比增速",      "+78%",     "+38%",     "+56%",        "+47%",        "+33%"],
+    ["GAAP毛利率",   "~27%",     "~34%",     "~35%",        "~37%",        "~38%"],
+    ["调整后EBITDA",  "($91M)",   "($101M)",  "($30M)",      "盈亏平衡",     "$50M+"],
+    ["GAAP每股收益",  "($0.42)",  "($0.37)",  "($0.22)",     "($0.25)",     "($0.08)"],
+    ["Electron发射数","16",       "21",       "~26–28",      "~24–26",      "~30–34"],
 ]
-etbl = doc.add_table(rows=len(est_data), cols=5)
+etbl = doc.add_table(rows=len(est_data), cols=6)
 etbl.alignment = WD_TABLE_ALIGNMENT.CENTER
 etbl.style = "Table Grid"
 for r_idx, row in enumerate(est_data):
@@ -428,20 +447,24 @@ for r_idx, row in enumerate(est_data):
         cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx > 0 else WD_ALIGN_PARAGRAPH.LEFT
         if r_idx == 0:
             set_cell_bg(cell, BLUE_HEX)
-            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9)
+            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9, cn=True)
         elif r_idx % 2 == 0:
             set_cell_bg(cell, "EBF5FB")
 
-add_heading_cn(doc, "估值框架", level=2)
-body_cn(doc, f"按报告生成时的实时股价{mkt['price']}（通过yfinance获取）计算，火箭实验室以约6.5–7.0倍EV/2026年预测营收交易，对于一家毛利率改善轨迹清晰的高成长垂直整合航天基础设施公司而言，该溢价倍数具备合理性。鉴于公司仍处于亏损阶段，我们采用EV/营收为主要估值方法。")
-body_cn(doc, "我们的12个月目标价35美元基于8.0倍EV/2026年预测营收（8.85亿美元）扣减净债务得出，较当前股价隐含约50%的上涨空间。相对于纯发射服务商，我们给予溢价倍数，原因在于RKLB的成熟执行能力、多元化营收结构及独特的主承包商竞争力。")
+body(doc, "数据来源：火箭实验室财务报告（A=实际值），分析师预测（E）。旧预测来自2026年2月Q4 FY2025业绩更新报告。", italic=True, color_hex=GRAY_HEX, size=8.5)
 
-add_heading_cn(doc, "情景分析", level=2)
+add_section_heading(doc, "估值框架", level=2)
+body(doc, f"以当前股价{mkt['price']}计算，火箭实验室约以{float(mkt['market_cap'].replace('约','').replace('亿美元',''))/94:.1f}x EV/FY2026E营收交易——该溢价反映了公司独特的竞争定位、超50%的营收增速及改善中的利润率轨迹。对于一家营收同比增长56%、EBITDA即将转正、拥有22亿美元在手订单的公司，我们认为该估值倍数相对航天及高成长工业可比公司是合理的。")
+body(doc, "我们的12个月目标价$120基于混合估值方法：")
+bullet(doc, "70%权重：70x EV/FY2027E EBITDA $50M+（适用于向盈利过渡的高成长航天公司）")
+bullet(doc, "30%权重：50x EV/FY2026E营收$940M（成长溢价倍数）")
+
+add_section_heading(doc, "情景分析", level=2)
 scen_data = [
-    ["情景",   "估值倍数",     "2026年预测营收", "隐含目标价", "潜在涨跌幅"],
-    ["悲观",   "5.0x EV/营收", "8.1亿美元",      "约22美元",   "约-10%"],
-    ["基准",   "8.0x EV/营收", "8.85亿美元",     "约35美元",   "约+50%"],
-    ["乐观",   "11.0x EV/营收","9.5亿美元",      "约50美元",   "约+115%"],
+    ["情景",   "估值方法",            "关键假设",                        "隐含目标价",  "较当前"],
+    ["悲观",   "40x EV/FY27E EBITDA", "Neutron延至2027；利润率下滑",      "~$65",      "下行风险"],
+    ["基准",   "混合方法（上述）",      "Neutron Q4'26；$940M营收",         "$120",      "上行潜力"],
+    ["乐观",   "80x EV/FY27E EBITDA", "Neutron准时；FY26>$1B；新合同",    "~$160",     "显著上行"],
 ]
 stbl = doc.add_table(rows=len(scen_data), cols=5)
 stbl.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -453,7 +476,7 @@ for r_idx, row in enumerate(scen_data):
         cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx > 0 else WD_ALIGN_PARAGRAPH.LEFT
         if r_idx == 0:
             set_cell_bg(cell, BLUE_HEX)
-            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9)
+            set_cell_font(cell, bold=True, color_hex=WHITE_HEX, size_pt=9, cn=True)
         elif r_idx == 1:
             set_cell_bg(cell, "FDFEFE")
         elif r_idx == 2:
@@ -464,14 +487,16 @@ for r_idx, row in enumerate(scen_data):
 doc.add_paragraph()
 
 p = doc.add_paragraph()
-run = p.add_run("  维持【买入】评级  |  目标价：35美元  ")
-run.bold = True; run.font.size = Pt(11)
-set_cjk_font(run, "黑体")
-r, g, b = hex_to_rgb(GREEN_HEX)
-run.font.color.rgb = RGBColor(r, g, b)
+r_bg = p.add_run("  维持买入评级  |  目标价：$120.00  ")
+r_bg.bold = True
+r_bg.font.size = Pt(12)
+r_bg.font.name = "黑体"
+r_bg._element.rPr.rFonts.set(qn("w:eastAsia"), "黑体")
+rv, gv, bv = hex_to_rgb(GREEN_HEX)
+r_bg.font.color.rgb = RGBColor(rv, gv, bv)
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-body_cn(doc, "2025年第四季度业绩有力证明火箭实验室的核心业务——Electron发射服务与航天系统——正在高水平执行。毛利率持续扩张、在手订单创历史新高、EBITDA超指引，均强化了公司业务质量。Neutron延期是一个重大负面因素，但市场已有一定程度的折价消化。我们维持买入评级，目标价35美元，隐含约50%的上涨空间。")
+body(doc, "Q1 2026是火箭实验室的里程碑季度——公司首次实现单季2亿美元营收，所有指标超预期，股价首次突破100美元。22亿美元在手订单、不断扩大的国防定位（金穹/SBI、HASTE）以及即将到来的纳斯达克100纳入均支持建设性展望。尽管估值较高且Neutron执行风险犹存，我们认为加速增长、毛利率扩张及战略定位的组合证明了维持买入评级的合理性。我们将目标价从此前的$35上调至$120，以反映大幅改善的业务规模和市场定位。")
 
 doc.add_page_break()
 
@@ -479,20 +504,26 @@ doc.add_page_break()
 # 资料来源
 # ══════════════════════════════════════════════════════════════════════════════
 
-add_heading_cn(doc, "资料来源")
+add_section_heading(doc, "资料来源")
 
 sources = [
-    ("火箭实验室2025年第四季度及全年业绩公告（2026年2月26日）",
-     "https://www.globenewswire.com/news-release/2026/02/26/3246099/0/en/Rocket-Lab-Announces-Fourth-Quarter-and-Full-Year-2025-Financial-Results-Posts-Record-Quarterly-Revenue-of-180M-Record-Annual-Revenue-of-602M-Delivering-Annual-Growth-of-38-and-Gro.html"),
-    ("火箭实验室Q4 2025电话会议记录（Motley Fool）",
-     "https://www.fool.com/earnings/call-transcripts/2026/02/26/rocket-lab-rklb-q4-2025-earnings-call-transcript/"),
-    ("火箭实验室Q4 2025电话会议记录（Seeking Alpha）",
-     "https://seekingalpha.com/article/4875957-rocket-lab-corporation-rklb-q4-2025-earnings-call-transcript"),
-    ("火箭实验室Q4 2025业绩亮点（Yahoo Finance）",
-     "https://finance.yahoo.com/news/rocket-lab-corp-rklb-q4-050040692.html"),
-    ("火箭实验室营收历史数据（MacroTrends）",
-     "https://www.macrotrends.net/stocks/charts/RKLB/rocket-lab/revenue"),
-    ("市场数据：yfinance实时获取（报告生成时间）",
+    ("火箭实验室Q1 FY2026业绩新闻稿（2026年5月7日）",
+     "https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-announces-first-quarter-2026-financial-results"),
+    ("火箭实验室 Form 8-K Q1 2026（SEC EDGAR，2026年5月7日）",
+     "https://www.sec.gov/Archives/edgar/data/0001819994/000181999426000027/rklb-05072026ex991.htm"),
+    ("火箭实验室 Form 10-Q Q1 2026（SEC EDGAR，截至2026年3月31日）",
+     "https://www.sec.gov/Archives/edgar/data/0001819994/000181999426000028/rklb-20260331.htm"),
+    ("火箭实验室Q1 2026业绩电话会议纪要（Seeking Alpha，2026年5月7日）",
+     "https://seekingalpha.com/article/4901108-rocket-lab-corporation-rklb-q1-2026-earnings-call-transcript"),
+    ("火箭实验室Q1 2026业绩电话会议纪要（Motley Fool，2026年5月8日）",
+     "https://www.fool.com/earnings/call-transcripts/2026/05/08/rocket-lab-rklb-q1-2026-earnings-transcript/"),
+    ("RKLB Q1 2026业绩分析（CNBC，2026年5月8日）",
+     "https://www.cnbc.com/2026/05/08/rocket-lab-rklb-q1-earnings-2026.html"),
+    ("火箭实验室Q4及FY2025业绩新闻稿（2026年2月26日）——上季度参考",
+     "https://www.sec.gov/Archives/edgar/data/0001819994/000181999426000012/rklb-02262026ex991.htm"),
+    ("RKLB营收历史数据（StockAnalysis.com）",
+     "https://stockanalysis.com/stocks/rklb/revenue/"),
+    ("市场数据：yfinance（报告生成时实时获取）",
      "https://finance.yahoo.com/quote/RKLB"),
 ]
 
@@ -503,10 +534,10 @@ for title, url in sources:
     add_hyperlink(p, title, url)
 
 doc.add_paragraph()
-body_cn(doc, "分析师一致预期：Bloomberg / FactSet，截至2026年2月。标注'预测'的数据为分析师一致预期。目标价及评级为分析师独立判断，可能与市场一致预期存在差异。", italic=True, color_hex=GRAY_HEX, size=8.5)
-body_cn(doc, "免责声明：本报告仅供参考，不构成投资建议。历史业绩不代表未来表现。", italic=True, color_hex=GRAY_HEX, size=8.5)
+body(doc, '分析师一致预期：Bloomberg / FactSet / LSEG，截至2026年5月7日盘前。标注"E"为分析师预测。目标价与评级为分析师独立评估。', italic=True, color_hex=GRAY_HEX, size=8.5)
+body(doc, '免责声明：本报告仅供参考，不构成投资建议。分析师及机构未持有RKLB仓位。过往表现不代表未来收益。', italic=True, color_hex=GRAY_HEX, size=8.5)
 
 # ─── Save ─────────────────────────────────────────────────────────────────────
-out_path = OUT + "RKLB_Q4_FY2025_业绩更新报告_中文版.docx"
+out_path = OUT + "RKLB_Q1_FY2026_业绩更新报告_中文版.docx"
 doc.save(out_path)
-print(f"\n中文报告已保存：{out_path}")
+print(f"\n中文报告已保存: {out_path}")
