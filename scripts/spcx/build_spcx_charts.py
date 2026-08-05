@@ -1,275 +1,269 @@
 #!/usr/bin/env python3
-"""Generate charts for SpaceX (SPCX) Q1 2026 Earnings Update Report."""
+"""Generate the 11 figures used in the SPCX Q2 2026 earnings update."""
+
+from __future__ import annotations
 
 import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import numpy as np
+import yfinance as yf
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "..", "output", "SPCX")
-os.makedirs(OUT, exist_ok=True)
 
-plt.rcParams.update({
-    "font.family":        "serif",
-    "font.serif":         ["Times New Roman"],
-    "axes.unicode_minus": False,
-    "figure.dpi":         150,
-    "savefig.dpi":        150,
-    "savefig.bbox":       "tight",
-    "axes.grid":          True,
-    "grid.alpha":         0.3,
-    "axes.spines.top":    False,
-    "axes.spines.right":  False,
-})
+OUT = Path("/Users/macrossz/DevTools/VscodeProject/ClaudeCode/financial_analysis/output/SPCX")
+OUT.mkdir(parents=True, exist_ok=True)
 
-SPACEX_BLUE  = "#005288"
-DARK_BLUE    = "#003366"
-LIGHT_BLUE   = "#4A90D9"
-STARLINK_T   = "#00A3E0"
-SPACE_ORANGE = "#E87722"
-AI_PURPLE    = "#7B2D8E"
-GREEN        = "#2E7D32"
-RED          = "#D32F2F"
-GRAY         = "#757575"
-LIGHT_GRAY   = "#BDBDBD"
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
+        "axes.unicode_minus": False,
+        "figure.dpi": 150,
+        "savefig.dpi": 150,
+        "savefig.bbox": "tight",
+        "axes.grid": True,
+        "grid.alpha": 0.18,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "axes.titleweight": "bold",
+    }
+)
 
-# ══ Data ════════════════════════════════════════════════════════════════════
+NAVY = "#0B2545"
+BLUE = "#005288"
+CYAN = "#00A3E0"
+ORANGE = "#E87722"
+PURPLE = "#7B2D8E"
+GREEN = "#2E7D32"
+RED = "#C62828"
+GOLD = "#B7791F"
+GRAY = "#6B7280"
+LIGHT = "#DCE6F1"
 
-# Annual consolidated revenue ($B)
-years_annual     = ["FY2023E", "FY2024", "FY2025", "Q1'26\nAnn."]
-rev_annual       = [9.5, 14.1, 18.7, 18.8]  # Q1 annualised = 4.694*4
 
-# FY2025 & Q1 2026 segment revenue ($B)
-seg_labels       = ["Connectivity\n(Starlink)", "Space\n(Launch/Dragon)", "AI\n(xAI / X)"]
-seg_fy25         = [11.39, 4.10, 3.20]
-seg_q1_26_ann    = [3.26*4, 0.619*4, 0.815*4]  # annualised
+def finish(fig: plt.Figure, name: str) -> None:
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    fig.savefig(OUT / name)
+    plt.close(fig)
 
-# Segment operating income / (loss) ($B)
-seg_opinc_fy25   = [4.40, -0.66, -6.36]
-seg_opinc_q1_26  = [1.188, None, -2.50]  # Space Q1 op not separately disclosed; estimate
-seg_opinc_q1_est = [1.188, 0.37, -2.50]  # residual for Space: -1.943 - 1.188 - (-2.5) = -0.631? Let me recalculate
-# Total Q1 op loss = -1.943; Connectivity = 1.188; AI = -2.5; Space = -1.943 - 1.188 + 2.5 = -0.631
-seg_opinc_q1_26  = [1.188, -0.631, -2.500]
 
-# Adjusted EBITDA by segment ($B)
-seg_ebitda_fy25  = [4.40, 0.65, -1.24]
-ebitda_total     = [None, None, 6.58, 1.13]  # FY23E?, FY24?, FY25, Q1'26
+def label_bars(ax, bars, fmt="{:.1f}", dy=0.03, color=NAVY):
+    for bar in bars:
+        value = bar.get_height()
+        offset = dy if value >= 0 else -dy
+        va = "bottom" if value >= 0 else "top"
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            value + offset,
+            fmt.format(value),
+            ha="center",
+            va=va,
+            fontsize=9,
+            fontweight="bold",
+            color=color,
+        )
 
-# Starlink subscribers (M)
-sub_periods      = ["YE\n2023", "YE\n2024", "YE\n2025", "Q1\n2026"]
-subs             = [2.3, 4.4, 8.9, 10.3]
 
-# Starlink ARPU ($/month)
-arpu_periods     = ["2023", "2024", "2025", "Q1 2026"]
-arpu             = [99, 85, 76, 66]
+# Figure 1: reported results vs pre-earnings consensus
+fig, axes = plt.subplots(1, 2, figsize=(9.6, 4.4))
+revenue_bars = axes[0].bar(["Consensus", "Reported"], [6.90, 7.814], color=[GRAY, BLUE], width=0.55)
+label_bars(axes[0], revenue_bars, "${:.2f}B", dy=0.10)
+axes[0].set_title("Q2 Revenue: 13.2% Beat")
+axes[0].set_ylabel("USD billions")
+axes[0].set_ylim(0, 9)
+eps_bars = axes[1].bar(["Consensus", "Reported"], [-0.29, -0.09], color=[GRAY, GREEN], width=0.55)
+label_bars(axes[1], eps_bars, "${:.2f}", dy=0.01)
+axes[1].axhline(0, color=NAVY, linewidth=0.8)
+axes[1].set_title("GAAP EPS: $0.20 Better")
+axes[1].set_ylabel("Loss per share")
+axes[1].set_ylim(-0.35, 0.05)
+fig.suptitle("SpaceX Q2 2026 Beat/Miss Snapshot", fontsize=14, fontweight="bold", color=NAVY)
+finish(fig, "spcx_q2_chart1_beat_miss.png")
 
-# CapEx by segment ($B) — FY2025
-capex_seg_labels = ["Connectivity", "Space", "AI"]
-capex_fy25       = [4.2, 3.8, 12.7]
-capex_q1_26      = [None, None, 7.7]  # Only AI disclosed
 
-# ── Chart 1: Annual Revenue Growth ─────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(9, 5.5))
-colors = [LIGHT_GRAY, SPACEX_BLUE, SPACEX_BLUE, LIGHT_BLUE]
-bars = ax.bar(years_annual, rev_annual, color=colors, edgecolor="white", width=0.55)
-for b, v in zip(bars, rev_annual):
-    ax.text(b.get_x() + b.get_width()/2, v + 0.3, f"${v:.1f}B", ha="center",
-            va="bottom", fontsize=10, fontweight="bold")
-# Growth annotations
-growths = [None, 48, 33, None]
-for i, g in enumerate(growths):
-    if g:
-        ax.annotate(f"+{g}% YoY", xy=(i, rev_annual[i]),
-                    xytext=(0, -18), textcoords="offset points",
-                    ha="center", fontsize=9, color=GREEN, fontweight="bold")
-ax.set_ylabel("Revenue ($ Billion)", fontsize=11)
-ax.set_title("SpaceX Consolidated Revenue", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(0, 24)
-fig.text(0.15, 0.02, "Note: FY2023 estimated; Q1'26 Ann. = Q1 revenue × 4.", fontsize=8, color=GRAY)
-fig.savefig(os.path.join(OUT, "spcx_chart1_annual_revenue.png"))
-plt.close()
+# Figure 2: segment revenue trend
+periods = ["Q2'25", "Q1'26", "Q2'26"]
+space_rev = [0.746, 0.619, 0.962]
+conn_rev = [2.588, 3.257, 4.291]
+ai_rev = [0.737, 0.818, 2.561]
+x = np.arange(len(periods))
+w = 0.23
+fig, ax = plt.subplots(figsize=(9.2, 4.8))
+b1 = ax.bar(x - w, space_rev, w, label="Space", color=ORANGE)
+b2 = ax.bar(x, conn_rev, w, label="Connectivity", color=CYAN)
+b3 = ax.bar(x + w, ai_rev, w, label="AI", color=PURPLE)
+for bars in (b1, b2, b3):
+    label_bars(ax, bars, "${:.1f}", dy=0.07)
+ax.set_xticks(x, periods)
+ax.set_ylabel("Revenue (USD billions)")
+ax.set_title("Segment Revenue: AI Inflects, Connectivity Compounds")
+ax.legend(ncol=3, frameon=False, loc="upper left")
+ax.set_ylim(0, 5.2)
+finish(fig, "spcx_q2_chart2_segment_revenue.png")
 
-# ── Chart 2: Revenue by Segment — FY2025 vs Q1'26 Annualised ──────────────
-fig, ax = plt.subplots(figsize=(10, 5.5))
-x = np.arange(len(seg_labels))
-w = 0.32
-b1 = ax.bar(x - w/2, seg_fy25, w, label="FY2025", color=SPACEX_BLUE, edgecolor="white")
-b2 = ax.bar(x + w/2, seg_q1_26_ann, w, label="Q1'26 Annualised", color=LIGHT_BLUE, edgecolor="white")
-for b, v in zip(b1, seg_fy25):
-    ax.text(b.get_x() + b.get_width()/2, v + 0.15, f"${v:.1f}B", ha="center", fontsize=9, fontweight="bold")
-for b, v in zip(b2, seg_q1_26_ann):
-    ax.text(b.get_x() + b.get_width()/2, v + 0.15, f"${v:.1f}B", ha="center", fontsize=9, fontweight="bold")
-ax.set_xticks(x)
-ax.set_xticklabels(seg_labels)
-ax.set_ylabel("Revenue ($ Billion)", fontsize=11)
-ax.set_title("SpaceX Revenue by Segment", fontsize=13, fontweight="bold", pad=12)
-ax.legend(fontsize=9)
-ax.set_ylim(0, 16)
-fig.savefig(os.path.join(OUT, "spcx_chart2_segment_revenue.png"))
-plt.close()
 
-# ── Chart 3: Segment Operating Income / (Loss) ────────────────────────────
-fig, ax = plt.subplots(figsize=(10, 5.5))
-x = np.arange(len(seg_labels))
-w = 0.32
-colors_fy = [GREEN if v >= 0 else RED for v in seg_opinc_fy25]
-colors_q1 = [GREEN if v >= 0 else RED for v in seg_opinc_q1_26]
-b1 = ax.bar(x - w/2, seg_opinc_fy25, w, label="FY2025", color=colors_fy, edgecolor="white", alpha=0.7)
-b2 = ax.bar(x + w/2, [v*4 for v in seg_opinc_q1_26], w, label="Q1'26 Annualised",
-            color=colors_q1, edgecolor="white", alpha=1.0)
-for b, v in zip(b1, seg_opinc_fy25):
-    ypos = v + 0.15 if v >= 0 else v - 0.4
-    ax.text(b.get_x() + b.get_width()/2, ypos, f"${v:.1f}B", ha="center", fontsize=9, fontweight="bold")
-for b, v_q in zip(b2, seg_opinc_q1_26):
-    v = v_q * 4
-    ypos = v + 0.15 if v >= 0 else v - 0.4
-    ax.text(b.get_x() + b.get_width()/2, ypos, f"${v:.1f}B", ha="center", fontsize=9, fontweight="bold")
-ax.axhline(0, color="black", linewidth=0.8)
-ax.set_xticks(x)
-ax.set_xticklabels(seg_labels)
-ax.set_ylabel("Operating Income / (Loss) ($ Billion)", fontsize=11)
-ax.set_title("SpaceX Segment Profitability (Annualised)", fontsize=13, fontweight="bold", pad=12)
-ax.legend(fontsize=9)
-ax.set_ylim(-12, 7)
-fig.savefig(os.path.join(OUT, "spcx_chart3_segment_profitability.png"))
-plt.close()
+# Figure 3: segment operating income/loss
+space_op = [-0.369, -0.662, -0.542]
+conn_op = [0.923, 1.188, 1.656]
+ai_op = [-1.524, -2.469, -1.257]
+fig, ax = plt.subplots(figsize=(9.2, 4.8))
+b1 = ax.bar(x - w, space_op, w, label="Space", color=ORANGE)
+b2 = ax.bar(x, conn_op, w, label="Connectivity", color=CYAN)
+b3 = ax.bar(x + w, ai_op, w, label="AI", color=PURPLE)
+for bars in (b1, b2, b3):
+    label_bars(ax, bars, "${:.1f}", dy=0.08)
+ax.axhline(0, color=NAVY, linewidth=0.9)
+ax.set_xticks(x, periods)
+ax.set_ylabel("Operating income/(loss), USD billions")
+ax.set_title("Connectivity Profit Pool Funds Space and AI Losses")
+ax.legend(ncol=3, frameon=False, loc="lower left")
+ax.set_ylim(-3.0, 2.2)
+finish(fig, "spcx_q2_chart3_segment_operating_income.png")
 
-# ── Chart 4: Starlink Subscriber Growth ────────────────────────────────────
-fig, ax = plt.subplots(figsize=(9, 5.5))
-bars = ax.bar(sub_periods, subs, color=STARLINK_T, edgecolor="white", width=0.5)
-for b, v in zip(bars, subs):
-    ax.text(b.get_x() + b.get_width()/2, v + 0.15, f"{v:.1f}M", ha="center",
-            fontsize=11, fontweight="bold")
-# Growth rates
-sub_yoy = [None, 91, 102, 49]  # YoY growth %
-for i, g in enumerate(sub_yoy):
-    if g:
-        ax.annotate(f"+{g}%", xy=(i, subs[i]), xytext=(0, -18),
-                    textcoords="offset points", ha="center", fontsize=9,
-                    color=GREEN, fontweight="bold")
-ax.set_ylabel("Subscribers (Millions)", fontsize=11)
-ax.set_title("Starlink Subscriber Growth", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(0, 13)
-fig.savefig(os.path.join(OUT, "spcx_chart4_starlink_subs.png"))
-plt.close()
 
-# ── Chart 5: Starlink ARPU Trend ──────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(9, 5.5))
-ax.plot(arpu_periods, arpu, "o-", color=STARLINK_T, linewidth=2.5, markersize=8)
-for i, (p, a) in enumerate(zip(arpu_periods, arpu)):
-    ax.annotate(f"${a}/mo", (p, a), textcoords="offset points", xytext=(0, 12),
-                fontsize=10, fontweight="bold", ha="center", color=DARK_BLUE)
-ax.fill_between(arpu_periods, arpu, alpha=0.15, color=STARLINK_T)
-ax.set_ylabel("Monthly ARPU ($)", fontsize=11)
-ax.set_title("Starlink Average Revenue Per User (ARPU)", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(50, 115)
-ax.annotate("ARPU declining as Starlink\nexpands into lower-income markets",
-            xy=(3, 66), xytext=(-80, -35), textcoords="offset points",
-            fontsize=9, color=RED, fontstyle="italic",
-            arrowprops=dict(arrowstyle="->", color=RED, lw=1.2))
-fig.savefig(os.path.join(OUT, "spcx_chart5_starlink_arpu.png"))
-plt.close()
+# Figure 4: Starlink subscribers and ARPU
+subs = [6.0, 10.3, 12.0]
+arpu = [85, 66, 66]
+fig, ax1 = plt.subplots(figsize=(9.2, 4.8))
+bars = ax1.bar(periods, subs, color=CYAN, width=0.5, alpha=0.9, label="Subscribers")
+label_bars(ax1, bars, "{:.1f}M", dy=0.25)
+ax1.set_ylabel("Subscribers (millions)", color=BLUE)
+ax1.set_ylim(0, 14)
+ax2 = ax1.twinx()
+ax2.grid(False)
+ax2.plot(periods, arpu, color=GOLD, marker="o", linewidth=2.5, markersize=7, label="ARPU")
+for i, value in enumerate(arpu):
+    ax2.text(i, value + 2.5, f"${value}", ha="center", fontsize=9, fontweight="bold", color=GOLD)
+ax2.set_ylabel("Monthly ARPU (USD)", color=GOLD)
+ax2.set_ylim(50, 100)
+ax1.set_title("Starlink: Subscribers Double YoY; ARPU Stabilizes QoQ")
+finish(fig, "spcx_q2_chart4_starlink_metrics.png")
 
-# ── Chart 6: FY2025 Revenue Mix Pie ───────────────────────────────────────
-fig, ax = plt.subplots(figsize=(7.5, 5.5))
-labels_pie = [f"Connectivity\n(Starlink)\n${seg_fy25[0]:.1f}B",
-              f"Space\n(Launch)\n${seg_fy25[1]:.1f}B",
-              f"AI\n(xAI / X)\n${seg_fy25[2]:.1f}B"]
-colors_pie = [STARLINK_T, SPACE_ORANGE, AI_PURPLE]
-wedges, texts, autotexts = ax.pie(seg_fy25, labels=labels_pie, colors=colors_pie,
-                                   autopct="%1.0f%%", startangle=90,
-                                   textprops={"fontsize": 10},
-                                   wedgeprops={"edgecolor": "white", "linewidth": 2})
-for at in autotexts:
-    at.set_fontsize(12)
-    at.set_fontweight("bold")
-    at.set_color("white")
-ax.set_title("FY2025 Revenue Mix by Segment\n(Total: $18.7B)", fontsize=13, fontweight="bold", pad=12)
-fig.savefig(os.path.join(OUT, "spcx_chart6_revenue_mix.png"))
-plt.close()
 
-# ── Chart 7: FY2025 CapEx by Segment ──────────────────────────────────────
-fig, ax = plt.subplots(figsize=(8, 5.5))
-bars = ax.bar(capex_seg_labels, capex_fy25,
-              color=[STARLINK_T, SPACE_ORANGE, AI_PURPLE], edgecolor="white", width=0.5)
-for b, v in zip(bars, capex_fy25):
-    ax.text(b.get_x() + b.get_width()/2, v + 0.2, f"${v:.1f}B", ha="center",
-            fontsize=11, fontweight="bold")
-    pct = v / sum(capex_fy25) * 100
-    ax.text(b.get_x() + b.get_width()/2, v / 2, f"{pct:.0f}%", ha="center",
-            fontsize=12, fontweight="bold", color="white")
-ax.set_ylabel("Capital Expenditures ($ Billion)", fontsize=11)
-ax.set_title("FY2025 CapEx by Segment (Total: $20.7B)", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(0, 16)
-fig.savefig(os.path.join(OUT, "spcx_chart7_capex_breakdown.png"))
-plt.close()
+# Figure 5: adjusted EBITDA and margin
+ebitda = [1.214, 1.127, 3.538]
+revenue = [4.071, 4.694, 7.814]
+margin = [a / b * 100 for a, b in zip(ebitda, revenue)]
+fig, ax1 = plt.subplots(figsize=(9.2, 4.8))
+bars = ax1.bar(periods, ebitda, color=[LIGHT, LIGHT, GREEN], edgecolor=BLUE, width=0.5)
+label_bars(ax1, bars, "${:.1f}B", dy=0.09)
+ax1.set_ylabel("Adjusted EBITDA (USD billions)")
+ax1.set_ylim(0, 4.3)
+ax2 = ax1.twinx()
+ax2.grid(False)
+ax2.plot(periods, margin, color=PURPLE, marker="o", linewidth=2.5)
+for i, value in enumerate(margin):
+    ax2.text(i, value + 2.2, f"{value:.1f}%", ha="center", fontsize=9, fontweight="bold", color=PURPLE)
+ax2.set_ylabel("Adjusted EBITDA margin")
+ax2.set_ylim(0, 55)
+ax1.set_title("Adjusted EBITDA Nearly Triples as AI Turns Positive")
+finish(fig, "spcx_q2_chart5_ebitda_margin.png")
 
-# ── Chart 8: Q1 2026 Cash Flow Waterfall ──────────────────────────────────
-fig, ax = plt.subplots(figsize=(9, 5.5))
-cf_labels = ["Adj\nEBITDA", "Working\nCapital", "CapEx", "Other", "Free\nCash Flow"]
-cf_vals   = [1.13, 0.7, -10.1, -0.83, -9.1]
-cf_bottom = [0, 1.13, 1.83, -8.27, 0]
-cf_colors = [GREEN, GREEN, RED, RED, RED]
-bars = ax.bar(cf_labels, [abs(v) for v in cf_vals], bottom=[max(0, b) if v >= 0 else b + v if b > 0 else b for b, v in zip(cf_bottom, cf_vals)],
-              color=cf_colors, edgecolor="white", width=0.5, alpha=0.85)
-# Simpler approach: just use direct bar chart
-plt.close()
 
-fig, ax = plt.subplots(figsize=(9, 5.5))
-cf_labels2 = ["Adj EBITDA", "CapEx", "FCF"]
-cf_vals2   = [1.13, -10.1, -9.1]
-colors2    = [GREEN, RED, RED]
-bars = ax.bar(cf_labels2, cf_vals2, color=colors2, edgecolor="white", width=0.45, alpha=0.85)
-for b, v in zip(bars, cf_vals2):
-    ypos = v + 0.15 if v >= 0 else v - 0.35
-    ax.text(b.get_x() + b.get_width()/2, ypos, f"${v:.1f}B", ha="center",
-            fontsize=11, fontweight="bold", color="white" if v < 0 else "black")
-ax.axhline(0, color="black", linewidth=0.8)
-ax.set_ylabel("$ Billion", fontsize=11)
-ax.set_title("Q1 2026 Cash Generation Overview", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(-12, 3)
-ax.annotate("$10.1B CapEx driven by\nAI infrastructure ($7.7B)",
-            xy=(1, -10.1), xytext=(50, 30), textcoords="offset points",
-            fontsize=9, color=DARK_BLUE, fontstyle="italic",
-            arrowprops=dict(arrowstyle="->", color=DARK_BLUE, lw=1.2))
-fig.savefig(os.path.join(OUT, "spcx_chart8_cash_flow.png"))
-plt.close()
+# Figure 6: AI revenue vs capex
+ai_capex = [0.749, 7.723, 15.828]
+fig, ax = plt.subplots(figsize=(9.2, 4.8))
+b1 = ax.bar(x - 0.17, ai_rev, 0.34, label="AI revenue", color=PURPLE)
+b2 = ax.bar(x + 0.17, ai_capex, 0.34, label="AI capex", color=RED, alpha=0.82)
+label_bars(ax, b1, "${:.1f}B", dy=0.25)
+label_bars(ax, b2, "${:.1f}B", dy=0.25)
+ax.set_xticks(x, periods)
+ax.set_ylabel("USD billions")
+ax.set_ylim(0, 18.5)
+ax.set_title("AI Monetization Improves, but Capex Runs 6.2x Revenue")
+ax.legend(frameon=False)
+finish(fig, "spcx_q2_chart6_ai_revenue_capex.png")
 
-# ── Chart 9: Adjusted EBITDA by Segment (FY2025) ──────────────────────────
-fig, ax = plt.subplots(figsize=(9, 5.5))
-ebitda_colors = [GREEN if v >= 0 else RED for v in seg_ebitda_fy25]
-bars = ax.bar(seg_labels, seg_ebitda_fy25, color=ebitda_colors, edgecolor="white", width=0.5, alpha=0.85)
-for b, v in zip(bars, seg_ebitda_fy25):
-    ypos = v + 0.1 if v >= 0 else v - 0.3
-    ax.text(b.get_x() + b.get_width()/2, ypos, f"${v:.2f}B", ha="center",
-            fontsize=10, fontweight="bold")
-ax.axhline(0, color="black", linewidth=0.8)
-# Add total line
-ax.axhline(y=6.58, color=SPACEX_BLUE, linestyle="--", linewidth=1.5, alpha=0.6)
-ax.text(2.35, 6.58 + 0.15, "Consolidated: $6.6B", fontsize=9, color=SPACEX_BLUE, fontweight="bold")
-ax.set_ylabel("Adjusted EBITDA ($ Billion)", fontsize=11)
-ax.set_title("FY2025 Adjusted EBITDA by Segment", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(-3, 8)
-fig.savefig(os.path.join(OUT, "spcx_chart9_ebitda_segment.png"))
-plt.close()
 
-# ── Chart 10: Post-IPO Valuation Context ──────────────────────────────────
-fig, ax = plt.subplots(figsize=(10, 5.5))
-comp_names = ["SpaceX\n(SPCX)", "Palantir\n(PLTR)", "Amazon\n(AMZN)", "Tesla\n(TSLA)", "Meta\n(META)"]
-comp_ps    = [94, 55, 4.2, 12, 9.5]  # Price/Sales multiples (approximate)
-comp_colors = [AI_PURPLE, LIGHT_BLUE, GRAY, GRAY, GRAY]
-bars = ax.bar(comp_names, comp_ps, color=comp_colors, edgecolor="white", width=0.5)
-for b, v in zip(bars, comp_ps):
-    ax.text(b.get_x() + b.get_width()/2, v + 1, f"{v:.1f}x", ha="center",
-            fontsize=10, fontweight="bold")
-ax.set_ylabel("Price / Sales (x)", fontsize=11)
-ax.set_title("IPO Valuation: SpaceX P/S Multiple vs. Peers", fontsize=13, fontweight="bold", pad=12)
-ax.set_ylim(0, 110)
-ax.annotate("SpaceX trades at extreme premium\nrelative to large-cap tech peers",
-            xy=(0, 94), xytext=(80, -15), textcoords="offset points",
-            fontsize=9, color=RED, fontstyle="italic",
-            arrowprops=dict(arrowstyle="->", color=RED, lw=1.2))
-fig.savefig(os.path.join(OUT, "spcx_chart10_valuation_comps.png"))
-plt.close()
+# Figure 7: Q2 capex allocation
+capex_values = [1.174, 1.367, 15.828]
+fig, ax = plt.subplots(figsize=(7.6, 4.8))
+wedges, _, autotexts = ax.pie(
+    capex_values,
+    labels=["Space", "Connectivity", "AI"],
+    colors=[ORANGE, CYAN, PURPLE],
+    autopct="%1.0f%%",
+    startangle=100,
+    wedgeprops={"edgecolor": "white", "linewidth": 2},
+    textprops={"fontsize": 10},
+)
+for t in autotexts:
+    t.set_color("white")
+    t.set_fontweight("bold")
+ax.set_title("Q2 2026 Capex Mix: 86% Allocated to AI")
+ax.text(0, -1.17, "Total capex: $18.4B", ha="center", color=NAVY, fontweight="bold")
+finish(fig, "spcx_q2_chart7_capex_mix.png")
 
-print(f"All 10 charts saved to {OUT}")
+
+# Figure 8: H1 cash flow
+fig, ax = plt.subplots(figsize=(8.8, 4.8))
+cf_labels = ["Operating cash flow", "Capital expenditures", "Free cash flow"]
+cf_values = [3.466, -28.476, -25.010]
+bars = ax.bar(cf_labels, cf_values, color=[GREEN, RED, RED], width=0.5)
+label_bars(ax, bars, "${:.1f}B", dy=0.7)
+ax.axhline(0, color=NAVY, linewidth=0.9)
+ax.set_ylabel("USD billions")
+ax.set_ylim(-32, 8)
+ax.set_title("H1 2026: Operating Cash Flow Swamped by AI-Led Capex")
+finish(fig, "spcx_q2_chart8_cash_flow.png")
+
+
+# Figure 9: estimate revisions
+metrics = ["FY26 Revenue", "FY26 Adj. EBITDA", "FY26 Capex", "FY27 Revenue", "FY27 Adj. EBITDA", "FY27 Capex"]
+old = [22.0, 5.5, 35.0, 28.0, 9.0, 30.0]
+new = [35.0, 15.5, 65.0, 58.0, 26.0, 75.0]
+y = np.arange(len(metrics))
+fig, ax = plt.subplots(figsize=(9.4, 5.4))
+ax.barh(y + 0.18, old, 0.34, label="Prior estimate", color=GRAY)
+ax.barh(y - 0.18, new, 0.34, label="Post-Q2 estimate", color=BLUE)
+for i, value in enumerate(new):
+    ax.text(value + 1.0, i - 0.18, f"${value:.1f}B", va="center", fontsize=8.5, fontweight="bold")
+ax.set_yticks(y, metrics)
+ax.invert_yaxis()
+ax.set_xlabel("USD billions")
+ax.set_title("Estimate Revisions: Growth and Spending Both Reset Higher")
+ax.legend(frameon=False, loc="lower right")
+ax.set_xlim(0, 84)
+finish(fig, "spcx_q2_chart9_estimate_revisions.png")
+
+
+# Figure 10: public-market price performance, dynamically sourced via yfinance
+fig, ax = plt.subplots(figsize=(9.4, 4.8))
+try:
+    hist = yf.Ticker("SPCX").history(start="2026-06-12", end="2026-08-06", auto_adjust=False)
+    if hist.empty:
+        raise ValueError("SPCX price history is empty")
+    ax.plot(hist.index, hist["Close"], color=BLUE, linewidth=2.2)
+    ax.fill_between(hist.index, hist["Close"], 100, color=CYAN, alpha=0.10)
+    ax.axhline(135, color=GOLD, linestyle="--", linewidth=1.4, label="IPO price: $135")
+    ax.axvline(hist.index[-2], color=PURPLE, linestyle=":", linewidth=1.4, label="Q2 results")
+    ax.scatter(hist.index[-1], hist["Close"].iloc[-1], color=RED, s=45, zorder=3)
+    ax.text(hist.index[-1], hist["Close"].iloc[-1] + 7, f"${hist['Close'].iloc[-1]:.2f}", ha="right", fontsize=9, fontweight="bold")
+    ax.set_ylim(95, max(240, float(hist["High"].max()) * 1.05))
+except Exception as exc:
+    print(f"Warning: could not fetch SPCX market history: {exc}")
+    fallback_dates = np.arange(4)
+    ax.plot(fallback_dates, [160.95, 201.80, 108.37, 115.09], color=BLUE, linewidth=2.2)
+    ax.set_xticks(fallback_dates, ["IPO", "Peak", "Pre-Q2", "Post-Q2"])
+    ax.axhline(135, color=GOLD, linestyle="--", linewidth=1.4, label="IPO price: $135")
+ax.set_ylabel("Share price (USD)")
+ax.set_title("SPCX Since IPO: Fundamental Beat Meets Capex and Unlock Overhang")
+ax.legend(frameon=False)
+finish(fig, "spcx_q2_chart10_price_since_ipo.png")
+
+
+# Figure 11: valuation scenarios
+fig, ax = plt.subplots(figsize=(8.6, 4.7))
+scenario_names = ["Bear", "Base PT", "Bull"]
+scenario_values = [80, 150, 225]
+bars = ax.bar(scenario_names, scenario_values, color=[RED, BLUE, GREEN], width=0.5, alpha=0.88)
+label_bars(ax, bars, "${:.0f}", dy=5)
+ax.axhline(115.75, color=GOLD, linestyle="--", linewidth=1.4, label="Reference price: $115.75")
+ax.set_ylabel("Implied value per share (USD)")
+ax.set_ylim(0, 260)
+ax.set_title("12-Month Valuation Scenarios")
+ax.legend(frameon=False)
+finish(fig, "spcx_q2_chart11_valuation_scenarios.png")
+
+print(f"Generated 11 SPCX Q2 charts in {OUT}")
