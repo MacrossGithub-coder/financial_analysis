@@ -1,0 +1,42 @@
+[
+  {
+    "change_percentage": "0",
+    "change_value": "0.000",
+    "high": "0",
+    "last": "209.660",
+    "low": "0",
+    "open": "0",
+    "overnight": {
+      "high": "222.230",
+      "last": "222.170",
+      "low": "218.620",
+      "prev_close": "209.660",
+      "timestamp": "2026-08-27T08:00:00Z",
+      "turnover": "593542935.000",
+      "volume": 2691245
+    },
+    "post_market": {
+      "high": "220.800",
+      "last": "219.530",
+      "low": "203.500",
+      "prev_close": "209.660",
+      "timestamp": "2026-08-26T23:59:59Z",
+      "turnover": "8324764407.600",
+      "volume": 39117843
+    },
+    "pre_market": {
+      "high": "226.810",
+      "last": "223.940",
+      "low": "219.780",
+      "prev_close": "209.660",
+      "timestamp": "2026-08-27T13:26:17Z",
+      "turnover": "2043804604.546",
+      "volume": 9177374
+    },
+    "prev_close": "209.660",
+    "status": "Normal",
+    "symbol": "NVDA.US",
+    "turnover": "0",
+    "volume": 0
+  }
+]
