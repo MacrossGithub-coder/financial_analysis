@@ -1,0 +1,42 @@
+[
+  {
+    "change_percentage": "-2.31",
+    "change_value": "-9.870",
+    "high": "430.000",
+    "last": "417.070",
+    "low": "415.180",
+    "open": "429.820",
+    "overnight": {
+      "high": "434.100",
+      "last": "427.660",
+      "low": "426.600",
+      "prev_close": "426.940",
+      "timestamp": "2026-09-15T08:00:00Z",
+      "turnover": "5914281.000",
+      "volume": 13742
+    },
+    "post_market": {
+      "high": "432.000",
+      "last": "431.680",
+      "low": "423.440",
+      "prev_close": "426.940",
+      "timestamp": "2026-09-14T23:59:59Z",
+      "turnover": "590755889.035",
+      "volume": 1383651
+    },
+    "pre_market": {
+      "high": "432.500",
+      "last": "429.820",
+      "low": "425.957",
+      "prev_close": "426.940",
+      "timestamp": "2026-09-15T13:30:00Z",
+      "turnover": "8373790.697",
+      "volume": 19469
+    },
+    "prev_close": "426.940",
+    "status": "Normal",
+    "symbol": "WDC.US",
+    "turnover": "808947815.127",
+    "volume": 1922712
+  }
+]
