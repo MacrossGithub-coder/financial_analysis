@@ -1,0 +1,140 @@
+{
+  "as_of": "2026-10-21",
+  "issuer": "Space Exploration Technologies Corp.",
+  "ticker": "SPCX",
+  "exchange": "Nasdaq",
+  "period": "Q3 2026",
+  "period_end": "2026-09-30",
+  "release_date": "2026-10-20",
+  "filing": {
+    "type": "8-K",
+    "accession": "0001628280-26-066482",
+    "filed": "2026-10-20",
+    "latest_10q": "2026-06-30 quarter, filed 2026-08-04",
+    "q3_10q_status": "Not filed as of 2026-10-21"
+  },
+  "market": {
+    "regular_close": 147.79,
+    "regular_close_date": "2026-10-20",
+    "after_hours_close": 159.705,
+    "after_hours_change_pct": 8.06,
+    "market_cap": 1948135258071.55,
+    "year_low": 104.83,
+    "year_high": 225.64,
+    "source": "Longbridge live quote and calculated index, accessed 2026-10-21"
+  },
+  "consensus": {
+    "revenue": 12.9,
+    "gaap_diluted_eps": 0.14,
+    "space_revenue": 1.43,
+    "connectivity_revenue": 4.78,
+    "si_revenue": 6.03,
+    "basis": "Pre-earnings public consensus dated 2026-10-19; segment consensus from Zacks dated 2026-10-20"
+  },
+  "quarterly": {
+    "periods": ["Q3'25A", "Q1'26A", "Q2'26A", "Q3'26A"],
+    "revenue": [5.576, 4.694, 7.814, 14.575],
+    "gaap_eps": [-0.36, -1.27, -0.09, 0.35],
+    "adjusted_ebitda": [2.169, 1.127, 3.538, 8.809],
+    "gross_margin_pct": [51.5, 49.1, 55.3, 62.4],
+    "operating_margin_pct": [-4.9, -41.4, -1.8, 19.1],
+    "net_margin_pct": [-18.9, -91.1, -6.9, 30.2]
+  },
+  "segments": {
+    "space": {
+      "revenue": [1.666, 0.619, 0.962, 1.767],
+      "operating_income": [0.259, -0.662, -0.542, -0.007],
+      "adjusted_ebitda_q3": 0.357,
+      "capex_q3": 1.606
+    },
+    "connectivity": {
+      "revenue": [3.097, 3.257, 4.291, 5.248],
+      "operating_income": [1.190, 1.188, 1.656, 2.367],
+      "adjusted_ebitda_q3": 3.499,
+      "capex_q3": 1.543,
+      "consumer_revenue_q3": 3.121,
+      "enterprise_government_revenue_q3": 2.127,
+      "subscribers_m": [7.2, 10.3, 12.0, 13.6],
+      "monthly_arpu": [83, 66, 66, 69]
+    },
+    "si": {
+      "revenue": [0.813, 0.818, 2.561, 7.560],
+      "operating_income": [-1.722, -2.469, -1.257, 0.431],
+      "adjusted_ebitda_q3": 4.953,
+      "capex_q3": 16.444,
+      "advertising_revenue_q3": 0.538,
+      "solutions_infrastructure_revenue_q3": 7.022,
+      "compute_gw": [0.6, 1.0, 1.4, 1.7]
+    }
+  },
+  "q3_income_statement": {
+    "revenue": 14.575,
+    "cost_of_revenue": 5.478,
+    "research_and_development": 4.596,
+    "selling_general_administrative": 1.707,
+    "operating_income": 2.791,
+    "interest_expense": 0.675,
+    "interest_income": 0.873,
+    "other_income": 1.025,
+    "pretax_income": 4.014,
+    "tax_benefit": 0.390,
+    "net_income": 4.404,
+    "diluted_eps": 0.35,
+    "diluted_shares_b": 12.475,
+    "adjusted_ebitda": 8.809,
+    "depreciation_amortization": 3.644,
+    "share_based_compensation": 1.146,
+    "acquisition_sbc": 1.217
+  },
+  "cash_balance_sheet": {
+    "nine_month_operating_cash_flow": 13.097,
+    "nine_month_capex": 48.069,
+    "nine_month_free_cash_flow": -34.972,
+    "cash": 51.294,
+    "marketable_securities": 38.561,
+    "debt_and_finance_leases": 38.844,
+    "net_cash": 51.011,
+    "backlog": 63.0,
+    "backlog_next_twelve_months": 42.0,
+    "deferred_revenue": 17.5
+  },
+  "guidance": {
+    "q4_capex_low": 35.0,
+    "q4_capex_high": 40.0,
+    "q4_exit_compute_gw_low": 2.5,
+    "q4_exit_compute_gw_high": 3.0,
+    "year_end_arr": 100.0,
+    "q1_2027_revenue_low": 33.0,
+    "q1_2027_revenue_high": 37.0,
+    "2027_incremental_compute_gw_base": 10.0,
+    "2027_incremental_compute_gw_upside": 20.0,
+    "starship_weekly_target": "H1 2027",
+    "starship_twice_weekly_target": "H2 2027"
+  },
+  "estimates": {
+    "fy2026_old": {"revenue": 35.0, "adjusted_ebitda": 15.5, "capex": 65.0},
+    "fy2026_new": {"revenue": 50.5, "adjusted_ebitda": 29.0, "operating_income": 8.5, "net_income": 9.1, "gaap_eps": 0.69, "capex": 85.5},
+    "fy2027_old": {"revenue": 58.0, "adjusted_ebitda": 26.0, "capex": 75.0},
+    "fy2027_new": {"revenue": 142.0, "adjusted_ebitda": 72.0, "operating_income": 31.0, "net_income": 27.0, "gaap_eps": 1.95, "capex": 150.0}
+  },
+  "valuation": {
+    "prior_target": 150,
+    "new_target": 210,
+    "bear": 110,
+    "base": 210,
+    "bull": 320,
+    "sotp_equity_value_trillion": 2.62,
+    "reference_price": 147.79,
+    "implied_upside_pct": 42.1
+  },
+  "sources": {
+    "earnings_release": "https://www.sec.gov/Archives/edgar/data/1181412/000162828026066482/spaceexplorationtechnologi.htm",
+    "form_8k": "https://www.sec.gov/Archives/edgar/data/1181412/000162828026066482/0001628280-26-066482-index.html",
+    "q2_form_10q": "https://www.sec.gov/Archives/edgar/data/1181412/000162828026052535/spcx-20260630.htm",
+    "ir_event": "https://ir.spacex.com/events/event-details/2026/Q3-2026-Earnings/default.aspx",
+    "transcript": "https://www.benzinga.com/news/26/10/62484605/spacex-q3-2026-earnings-call-transcript",
+    "consensus_preview": "https://www.tipranks.com/news/spacex-q3-earnings-preview-options-market-signals-7-8-move-as-analysts-forecast-12-9b-revenue",
+    "segment_consensus": "https://www.zacks.com/stock/news/3011518/spacex-spcx-q3-earnings-how-key-metrics-compare-to-wall-street-estimates",
+    "market_data": "https://longbridge.com/quote/SPCX.US"
+  }
+}
